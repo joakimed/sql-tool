@@ -1,19 +1,23 @@
 # meny
 
-echo "1. Vis data om ansatt
-2. Registrer ny ansatt
-3. Endre ansatt
-4. Slette ansatt
-0. Avslutt"
-
 # Passord
 katt=$(grep "tmp logg" ~/script/passord | cut -d":" -f2)
 
 valg2=1
 while
-
 	(( $valg2 > 0 ))
-	do 
+	do
+	echo "
+-----------------------------------------
+|                Meny                   |"
+echo "#########################################
+1. Vis data om ansatt
+2. Registrer ny ansatt
+3. Endre ansatt
+4. Slette ansatt
+5. Søk
+0. Avslutt
+-----------------------------------------"
 	read -p "Valg: " valg2
 	
 	case "$valg2" in
@@ -47,15 +51,10 @@ while
    Etternavn: $etternavn
    Epost: $epost
    Gateadresse: $gateadr
-   Postnr: $postnr
-   Sted: $sted
+   Postnr: $postnr $sted
    Telefon: $tlf
    Fødselsdato (DD-MM-YYYY): $d-$m-$y
-   Avd: $avd
-0. Avslutt
------------------------------------------   
-|          Avbryt med CTRL-C            |"
-			echo "#########################################"
+   Avd: $avd"
 		
 			rm ~/script/sql/edit.tmp
 		;;
@@ -67,7 +66,7 @@ while
 			read -p "Epost-adresse: " email
 			read -p "Gateadresse: " gateadr
 
-			# sjekk at postnr er tall
+			# sjekk at postnr er 4 siffer
 			err1=1
 
 			while (( $err1 > 0 )); do
@@ -82,7 +81,7 @@ while
 			done
 			# postnr slutt
 
-			sted=$(mysql -u root -ppetunia -Bse "USE personal;SELECT * FROM postnr WHERE postnr = $postnr")
+			sted=$(mysql -u root -p$katt -Bse "USE personal;SELECT * FROM postnr WHERE postnr = $postnr")
 			cut_sted=$(echo $sted|cut -d" " -f2)
 
 			#sjekk at tlfnr er 8 siffer
@@ -101,10 +100,9 @@ while
 			# tlfnr slutt
 
 			read -p "Fødselsdato (DD-MM-YYYY): " f_dato
+			avd_nr="NULL"
 			read -p "Avdelingsnr: " avd_nr
-						if [ $avd_nr= ]; then
-							avd_nr="NULL"
-						fi
+						
 			
 			
 			# Konvertering av dato
@@ -112,7 +110,7 @@ while
 
 			
 			# MySQL
-			mysql -u root -p$katt -Bse "USE personal;INSERT INTO ansatte VALUE('$fornavn', '$etternavn', '$email', '$gateadr', $postnr, '$cut_sted', $telefon, '$konv_dato', NOW(), $avd_nr, NULL);" &>>~/script/error.log
+			mysql -u root -p$katt -Bse "USE personal;INSERT INTO ansatte VALUE('$fornavn', '$etternavn', '$email', '$gateadr', $postnr, '$cut_sted', $telefon, '$konv_dato', NOW(), $avd_nr, NULL)" &>>~/script/error.log
 
 			# errorlog
 			if [ $? > 0 ]; then
@@ -151,8 +149,7 @@ echo "#########################################
 2. Etternavn: $etternavn
 3. Epost: $epost
 4. Gateadresse: $gateadr
-5. Postnr: $postnr
-   Sted: $sted (Hentes automatisk)
+5. Postnr: $postnr ($sted)
 7. Telefon: $tlf
 8. Fødselsdato (DD-MM-YYYY): $d-$m-$y
 9. Avd: $avd
@@ -195,8 +192,6 @@ echo "#########################################
 					4) read -p "Oppgi ny gateadr: " ny_gateadr
 					;;
 					5) read -p "Oppgi nytt postnr: " ny_postnr
-					ny_sted=$(mysql -u root -ppetunia -Bse "USE personal;SELECT * FROM postnr WHERE postnr = $ny_postnr")
-					cut_sted=$(echo $ny_sted|cut -d" " -f2)
 					;;
 					7) read -p "Oppgi nytt tlfnr: " ny_tlf
 					;;
@@ -211,57 +206,53 @@ echo "#########################################
 				esac
 			done
 
-			#query='"'
+			
 			query+='mysql -u root -p$katt -Bse "USE personal;UPDATE ansatte SET '
 			# bygger opp fornavn
-			if [ $ny_fornavn != 1048576 ]; then
+			if [ "$ny_fornavn" != 1048576 ]; then
 				query+="fornavn = '"
 				query+=$ny_fornavn
 				query+="', "
 			fi
-
 			# bygger opp etternavn
-			if [ $ny_etternavn != 1048576 ]; then
+			if [ "$ny_etternavn" != 1048576 ]; then
 				query+="etternavn = '"
 				query+=$ny_etternavn
 				query+="', "
 			fi
-
 			# bygger opp epost
 			if [ "$ny_epost" != 1048576 ]; then
 				query+="email = '"
 				query+=$ny_epost
 				query+="', "
 			fi
-
 			# bygger opp gateadr
 			if [ "$ny_gateadr" != 1048576 ]; then
 				query+="gateadr = '"
 				query+=$ny_gateadr
 				query+="', "
 			fi
-
 			# bygger opp postnr
 			if [ $ny_postnr != 1048576 ]; then
 				query+="postnr = '"
 				query+=$ny_postnr
 				query+="', "
+				
+				ny_sted=$(mysql -u root -p$katt -Bse "USE personal;SELECT * FROM postnr WHERE postnr = $ny_postnr")
+				cut_sted=$(echo $ny_sted|cut -d" " -f2)
 			fi
-
 			# bygger opp poststed
-			if [ $cut_sted != 1048576 ]; then
+			if [ "$cut_sted" != 1048576 ]; then
 				query+="sted = '"
 				query+=$cut_sted
 				query+="', "
 			fi
-
 			# bygger opp tlf
 			if [ $ny_tlf != 1048576 ]; then
 				query+="telefon = '"
 				query+=$ny_tlf
 				query+="', "
 			fi
-
 			# bygger opp fødselsdato + konvertering
 			if [ $ny_f_dato != 1048576 ]; then
 				konv_dato=$(mysql -u root -p$katt -Bse "SELECT STR_TO_DATE('$ny_f_dato', '%d-%m-%Y')")
@@ -269,15 +260,13 @@ echo "#########################################
 				query+=$konv_dato
 				query+="', "
 			fi
-
 			# bygger opp avd
 			if [ $ny_avd != 1048576 ]; then
 				query+="avd = '"
 				query+=$ny_avd
 				query+="', "
 			fi
-
-
+			rm edit.tmp
 			query=${query:: -2}
 
 			ansatt_extra=" WHERE ansatt_id = "
@@ -285,11 +274,8 @@ echo "#########################################
 			query+=$ansatt
 			query+=';"'
 
-			echo $query
 			eval "$query"
-
-
-			rm edit.tmp
+			query=""
 		;;
 		4) #slett ansatt
 			read -p "Slett ansatt ID: " slett_ansatt
@@ -297,6 +283,86 @@ echo "#########################################
 			if [ $slett_id != ]; then
 				mysql -u root -p$katt -Bse "USE personal;DELETE FROM ansatte WHERE ansatt_id = $slett_ansatt"
 			fi
+		;;
+		5) # Søk
+			
+			# Oppretter variabler på det som skal endres
+			s_fornavn="1048576"
+			s_etternavn="1048576"
+			s_epost="1048576"
+			s_gateadr="1048576"
+			s_postnr="1048576"
+			s_tlf="1048576"
+			s_f_dato="1048576"
+			s_avd="1048576"
+			
+			sok=1
+			
+			while
+				(( $sok > 0 ))
+				do 
+				
+				echo "Søk ved hjelp av:
+1. Fornavn
+2. Etternavn
+3. Epost
+5. Postnr
+7. Telefonnr
+9. Avdeling
+0. Tilbake
+"
+				read -p "Valg: " sok
+
+				case "$sok" in
+				
+				
+				
+					0) 
+					;;
+					1) read -p "Fornavn: " s_fornavn
+						if [ "$s_fornavn" != 1048576 ]; then
+							mysql -u root -p$katt -e "USE personal;SELECT * FROM ansatte WHERE fornavn = '$s_fornavn'"
+							
+						fi
+					;;
+					2) read -p "Etternavn: " s_etternavn
+						if [ "$s_etternavn" != 1048576 ]; then
+							mysql -u root -p$katt -e "USE personal;SELECT * FROM ansatte WHERE etternavn = '$s_etternavn'"
+						fi
+					;;
+					3) read -p "Epost: " s_epost
+						if [ "$s_epost" != 1048576 ]; then
+							mysql -u root -p$katt -e "USE personal;SELECT * FROM ansatte WHERE email = '$s_epost'"
+						fi
+					;;
+			#		4) read -p "Gateadr: " s_gateadr
+			#			if [ "$s_gateadr" != 1048576 ]; then
+			#				mysql -u root -p$katt -Bse "USE personal;SELECT * FROM ansatte WHERE gateadr = '$s_gateadr'"
+			#			fi
+			#		;;
+					5) read -p "Postnr: " s_postnr
+						if [ "$s_postnr" != 1048576 ]; then
+							mysql -u root -p$katt -e "USE personal;SELECT * FROM ansatte WHERE postnr = $s_postnr"
+						fi
+					;;
+					7) read -p "Tlfnr: " s_tlf
+						if [ "$s_tlf" != 1048576 ]; then
+							mysql -u root -p$katt -e "USE personal;SELECT * FROM ansatte WHERE telefon = $s_tlf"
+						fi
+					;;
+#			#		8) read -p "Fødselsdato (DD-MM-YYYY): " s_f_dato
+#			#		;;
+					9) read -p "Avdeling: " s_avd
+						if [ "$s_avd" != 1048576 ]; then
+							mysql -u root -p$katt -e "USE personal;SELECT * FROM ansatte WHERE avd = $s_avd"
+						fi
+					;;
+					*) echo "Du har ikke tastet et gyldig siffer."
+					sok=1
+					;;
+
+				esac
+			done
 		;;
 
 		*) echo "Du har ikke tastet et gyldig siffer."
