@@ -43,16 +43,16 @@ while
 -----------------------------------------
 |     Eksisterende info i database      |"
 			echo "#########################################
-1. Fornavn: $fornavn
-2. Etternavn: $etternavn
-3. Epost: $epost
-4. Gateadresse: $gateadr
-5. Postnr: $postnr
-6. Sted: $sted
-7. Telefon: $tlf
-8. Fødselsdato (DD-MM-YYYY): $d-$m-$y
-9. Avd: $avd
-0. Lagre i database og avslutt
+   Fornavn: $fornavn
+   Etternavn: $etternavn
+   Epost: $epost
+   Gateadresse: $gateadr
+   Postnr: $postnr
+   Sted: $sted
+   Telefon: $tlf
+   Fødselsdato (DD-MM-YYYY): $d-$m-$y
+   Avd: $avd
+0. Avslutt
 -----------------------------------------   
 |          Avbryt med CTRL-C            |"
 			echo "#########################################"
@@ -151,7 +151,7 @@ echo "#########################################
 3. Epost: $epost
 4. Gateadresse: $gateadr
 5. Postnr: $postnr
-6. Sted: $sted
+   Sted: $sted (Hentes automatisk)
 7. Telefon: $tlf
 8. Fødselsdato (DD-MM-YYYY): $d-$m-$y
 9. Avd: $avd
