@@ -83,6 +83,7 @@ while
 			# postnr slutt
 
 			sted=$(mysql -u root -ppetunia -Bse "USE personal;SELECT * FROM postnr WHERE postnr = $postnr")
+			cut_sted=$(echo $sted|cut -d" " -f2)
 
 			#sjekk at tlfnr er 8 siffer
 			err1=1
@@ -111,7 +112,7 @@ while
 
 			
 			# MySQL
-			mysql -u root -p$katt -Bse "USE personal;INSERT INTO ansatte VALUE('$fornavn', '$etternavn', '$email', '$gateadr', $postnr, '$sted', $telefon, '$konv_dato', NOW(), $avd_nr, NULL);" &>>~/script/error.log
+			mysql -u root -p$katt -Bse "USE personal;INSERT INTO ansatte VALUE('$fornavn', '$etternavn', '$email', '$gateadr', $postnr, '$cut_sted', $telefon, '$konv_dato', NOW(), $avd_nr, NULL);" &>>~/script/error.log
 
 			# errorlog
 			if [ $? > 0 ]; then
