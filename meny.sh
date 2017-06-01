@@ -82,7 +82,7 @@ while
 			done
 			# postnr slutt
 
-			read -p "Sted: " sted
+			sted=$(mysql -u root -ppetunia -Bse "USE personal;SELECT * FROM postnr WHERE postnr = $postnr")
 
 			#sjekk at tlfnr er 8 siffer
 			err1=1
@@ -194,8 +194,8 @@ echo "#########################################
 					4) read -p "Oppgi ny gateadr: " ny_gateadr
 					;;
 					5) read -p "Oppgi nytt postnr: " ny_postnr
-					;;
-					6) read -p "Oppgi nytt poststed: " ny_sted
+					ny_sted=$(mysql -u root -ppetunia -Bse "USE personal;SELECT * FROM postnr WHERE postnr = $ny_postnr")
+					cut_sted=$(echo $ny_sted|cut -d" " -f2)
 					;;
 					7) read -p "Oppgi nytt tlfnr: " ny_tlf
 					;;
@@ -248,9 +248,9 @@ echo "#########################################
 			fi
 
 			# bygger opp poststed
-			if [ $ny_sted != 1048576 ]; then
+			if [ $cut_sted != 1048576 ]; then
 				query+="sted = '"
-				query+=$ny_sted
+				query+=$cut_sted
 				query+="', "
 			fi
 
